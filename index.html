@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Planejamento</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .menu-item-3d { transition: all 0.3s ease; }
+        .menu-item-3d:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 200, 255, 0.3), 0 4px 6px -2px rgba(0, 200, 255, 0.2);
+            background-color: #1e3a5f;
+            border-color: #38bdf8;
+        }
+
+        .card-btn { transition: transform 0.2s, filter 0.2s; }
+        .card-btn:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .card-btn:active { transform: scale(0.98); }
+        
+        .checklist-checkbox { accent-color: #579dff; width: 16px; height: 16px; cursor: pointer; }
+    </style>
+</head>
+<body class="bg-[#111827] text-white font-sans h-screen flex overflow-hidden">
+
+    <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded-md shadow-lg">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <aside id="sidebar" class="bg-[#0f172a] w-64 h-full border-r border-slate-700 flex flex-col absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="p-4 border-b border-slate-700 flex justify-between items-center mt-12 md:mt-0">
+            <h2 class="text-xl font-bold text-center w-full bg-cyan-800/50 py-2 rounded border border-cyan-700 shadow-inner">Menu</h2>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white absolute right-4"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Agenda</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Rotinas</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Em Andamento</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Cursos</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Business Plan</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Gestão Imóvel</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Planejamento</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Treinamento</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Projetos</button>
+            <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Informações</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#1e293b]">
+        <div class="hidden lg:block absolute right-2 top-1/2 -translate-y-1/2 rotate-90 origin-right text-slate-500/50 text-sm font-semibold tracking-widest whitespace-nowrap pointer-events-none">
+            By - Jose Andrade
+        </div>
+
+        <header class="p-6 pb-2 text-center">
+            <h1 class="text-3xl font-semibold tracking-wider text-slate-200">Meu Planejamento</h1>
+        </header>
+
+        <!-- Status de Conexão -->
+        <div id="connectionStatus" class="text-center text-xs text-yellow-500 mb-2 font-mono">Conectando ao banco de dados...</div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto h-full auto-rows-fr">
+                <button onclick="openModal('Diário')" class="card-btn bg-[#4eb4e6] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Diário</button>
+                <button onclick="openModal('Investimentos')" class="card-btn bg-[#18465d] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Investimentos</button>
+                <button onclick="openModal('Atividades')" class="card-btn bg-[#102a3a] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Atividades</button>
+                <button onclick="openModal('Contas e Bancos')" class="card-btn bg-[#4ade80] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
+                <button onclick="openModal('Contas Secundárias')" class="card-btn bg-[#1c5f2b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
+                <button onclick="openModal('Leituras')" class="card-btn bg-[#0c2f12] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Leituras</button>
+                <button onclick="openModal('Metas')" class="card-btn bg-[#f5a87f] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Metas</button>
+                <button onclick="openModal('Autorresponsabilidade')" class="card-btn bg-[#c25119] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Autorresponsabilidade</button>
+                <button onclick="openModal('Loterias')" class="card-btn bg-[#7a3411] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Loterias</button>
+                <button onclick="openModal('Sugestões')" class="card-btn bg-[#ffcc5c] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Sugestões</button>
+                <button onclick="openModal('Conquistas')" class="card-btn bg-[#ffd600] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Conquistas</button>
+                <button onclick="openModal('Despesas')" class="card-btn bg-[#f59e0b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Despesas</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="inputModal" class="hidden fixed inset-0 z-50 bg-black/70 flex justify-center items-start pt-10 pb-10 overflow-y-auto px-4">
+        <div class="bg-[#22272b] w-full max-w-5xl rounded-xl shadow-2xl text-[#b6c2cf] relative flex flex-col md:flex-row mt-4">
+            <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700 text-slate-400 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
+
+            <!-- Esquerda -->
+            <div class="flex-1 p-6 border-b md:border-b-0 md:border-r border-[#3a444c]">
+                <div class="flex items-start gap-3 mb-6">
+                    <i class="far fa-credit-card text-xl mt-1"></i>
+                    <div class="w-full">
+                        <h2 id="modalTitle" class="text-2xl font-semibold text-white leading-tight mb-2">Título Dinâmico</h2>
+                        <div class="text-sm">na lista <span class="underline cursor-pointer">A Fazer</span></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-8 ml-8">
+                    <button onclick="focusChecklist()" class="bg-[#3a444c] hover:bg-[#4a555e] px-3 py-1.5 rounded text-sm flex items-center gap-2 transition"><i class="fas fa-check-square"></i> Adicionar Checklist</button>
+                </div>
+
+                <!-- Descrição -->
+                <div class="flex items-start gap-3 ml-1 mb-8">
+                    <i class="fas fa-align-left text-lg mt-1"></i>
+                    <div class="w-full">
+                        <h3 class="text-lg font-medium text-white mb-3">Descrição</h3>
+                        <div class="border border-[#3a444c] rounded-md overflow-hidden bg-[#22272b] focus-within:border-[#579dff] transition">
+                            <textarea id="modalDescription" rows="4" class="w-full bg-transparent p-3 text-sm text-white resize-y outline-none" placeholder="Adicionar uma descrição..."></textarea>
+                        </div>
+                        <div class="mt-2">
+                            <button id="saveDescBtn" onclick="saveDescription()" class="bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] font-medium px-4 py-1.5 rounded transition text-sm">Salvar Descrição</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="flex items-start gap-3 ml-1 mb-4">
+                    <i class="far fa-check-square text-lg mt-1"></i>
+                    <div class="w-full">
+                        <h3 class="text-lg font-medium text-white mb-3">Checklist</h3>
+                        
+                        <div class="flex items-center gap-3 mb-4">
+                            <span id="progressText" class="text-xs text-[#8c9bab] w-8">0%</span>
+                            <div class="w-full bg-[#091e4224] rounded-full h-2 border border-[#3a444c]">
+                                <div id="progressBar" class="bg-[#579dff] h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="checklistContainer" class="space-y-2 mb-4"></div>
+
+                        <div class="mt-3">
+                            <input id="newChecklistInput" type="text" placeholder="Adicionar um item..." class="w-full bg-[#22272b] border border-[#3a444c] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#579dff] transition mb-2">
+                            <button onclick="addChecklistItem()" class="bg-[#3a444c] hover:bg-[#4a555e] px-4 py-1.5 rounded text-sm transition">Adicionar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direita -->
+            <div class="w-full md:w-80 p-6 bg-[#282e33] rounded-r-xl">
+                <div class="flex items-center gap-2 text-white font-medium mb-6">
+                    <i class="far fa-comment-alt"></i><span>Atividade</span>
+                </div>
+                <div class="flex items-start gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-full bg-[#38bdf8] flex items-center justify-center text-[#1d2125] font-bold text-xs flex-shrink-0">JA</div>
+                    <input id="commentInput" type="text" placeholder="Escreva e tecle Enter..." class="w-full bg-[#22272b] border border-[#3a444c] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#579dff] transition">
+                </div>
+                <div id="activityLog" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE INTEGRAÇÃO COM FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Credenciais extraídas da sua imagem
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnYNS9o0TthwxhrtoH0csjQrT7VJM2214",
+            authDomain: "meu-planejamento-web.firebaseapp.com",
+            databaseURL: "https://meu-planejamento-web-default-rtdb.firebaseio.com",
+            projectId: "meu-planejamento-web",
+            storageBucket: "meu-planejamento-web.firebasestorage.app",
+            messagingSenderId: "833049352188",
+            appId: "1:833049352188:web:47a59ad9799f5330960479"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Verifica conexão global
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            const statusDiv = document.getElementById("connectionStatus");
+            if (snap.val() === true) {
+                statusDiv.innerText = "Sincronizado com a Nuvem";
+                statusDiv.className = "text-center text-xs text-green-500 mb-2 font-mono";
+                setTimeout(() => statusDiv.style.display = 'none', 3000);
+            } else {
+                statusDiv.style.display = 'block';
+                statusDiv.innerText = "Offline - Trabalhando localmente";
+                statusDiv.className = "text-center text-xs text-red-500 mb-2 font-mono";
+            }
+        });
+
+        let currentCategory = '';
+        let currentData = {};
+
+        // Escuta dados em tempo real para a categoria selecionada
+        function setupFirebaseListener(categoryName) {
+            const categoryRef = ref(db, 'planejamento/' + categoryName);
+            onValue(categoryRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    currentData = data;
+                } else {
+                    currentData = { description: '', comments: [], checklist: [] };
+                }
+                
+                // Atualiza a UI se o modal da categoria certa estiver aberto
+                if (!document.getElementById('inputModal').classList.contains('hidden') && currentCategory === categoryName) {
+                    document.getElementById('modalDescription').value = currentData.description || '';
+                    renderComments(currentData.comments || []);
+                    renderChecklist(currentData.checklist || []);
+                }
+            });
+        }
+
+        // Sincroniza dados para a nuvem
+        function syncToFirebase() {
+            set(ref(db, 'planejamento/' + currentCategory), currentData);
+        }
+
+        // --- FUNÇÕES GLOBAIS (window) PARA USO NO HTML ---
+        
+        window.toggleSidebar = function() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        };
+
+        window.openModal = function(categoryName) {
+            currentCategory = categoryName;
+            document.getElementById('modalTitle').innerText = categoryName;
+            document.getElementById('inputModal').classList.remove('hidden');
+            setupFirebaseListener(categoryName);
+        };
+
+        window.closeModal = function() {
+            document.getElementById('inputModal').classList.add('hidden');
+        };
+
+        // Fechar ao clicar fora
+        document.getElementById('inputModal').addEventListener('click', e => {
+            if (e.target === document.getElementById('inputModal')) window.closeModal();
+        });
+
+        window.saveDescription = function() {
+            currentData.description = document.getElementById('modalDescription').value;
+            syncToFirebase();
+            
+            const btn = document.getElementById('saveDescBtn');
+            btn.innerText = "Salvo!";
+            btn.classList.replace('bg-[#579dff]', 'bg-green-500');
+            setTimeout(() => { btn.innerText = "Salvar Descrição"; btn.classList.replace('bg-green-500', 'bg-[#579dff]'); }, 2000);
+        };
+
+        window.focusChecklist = function() { 
+            document.getElementById('newChecklistInput').focus(); 
+        };
+
+        window.addChecklistItem = function() {
+            const input = document.getElementById('newChecklistInput');
+            const text = input.value.trim();
+            if (text) {
+                if (!currentData.checklist) currentData.checklist = [];
+                currentData.checklist.push({ text: text, done: false });
+                syncToFirebase();
+                input.value = '';
+            }
+        };
+
+        document.getElementById('newChecklistInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') window.addChecklistItem();
+        });
+
+        window.toggleChecklist = function(index) {
+            currentData.checklist[index].done = !currentData.checklist[index].done;
+            syncToFirebase();
+        };
+
+        window.deleteChecklist = function(index) {
+            currentData.checklist.splice(index, 1);
+            syncToFirebase();
+        };
+
+        function renderChecklist(checklist) {
+            const container = document.getElementById('checklistContainer');
+            container.innerHTML = '';
+            let completed = 0;
+            
+            if (!checklist) checklist = [];
+
+            checklist.forEach((item, index) => {
+                if (item.done) completed++;
+                const lineThrough = item.done ? 'line-through text-[#8c9bab]' : 'text-white';
+                
+                container.innerHTML += `
+                    <div class="flex items-center justify-between group hover:bg-[#3a444c] p-2 rounded -mx-2 transition">
+                        <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="toggleChecklist(${index})">
+                            <input type="checkbox" class="checklist-checkbox" ${item.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleChecklist(${index})">
+                            <span class="text-sm ${lineThrough}">${item.text}</span>
+                        </div>
+                        <button onclick="deleteChecklist(${index})" class="text-[#8c9bab] hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-2"><i class="fas fa-trash-alt text-xs"></i></button>
+                    </div>
+                `;
+            });
+
+            const total = checklist.length;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+            
+            document.getElementById('progressText').innerText = `${percentage}%`;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            
+            if (percentage === 100 && total > 0) {
+                document.getElementById('progressBar').classList.replace('bg-[#579dff]', 'bg-green-500');
+            } else {
+                document.getElementById('progressBar').classList.replace('bg-green-500', 'bg-[#579dff]');
+            }
+        }
+
+        // Comentários
+        document.getElementById('commentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim() !== '') {
+                const dateStr = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(' de ', ' de ');
+                
+                if (!currentData.comments) currentData.comments = [];
+                currentData.comments.unshift({ user: 'Jose R B Andrade', initials: 'JA', text: this.value.trim(), date: dateStr });
+                
+                syncToFirebase();
+                this.value = '';
+            }
+        });
+
+        function renderComments(commentsArray) {
+            const log = document.getElementById('activityLog');
+            log.innerHTML = '';
+            
+            if (!commentsArray || commentsArray.length === 0) {
+                log.innerHTML = '<div class="text-sm text-[#8c9bab] italic">Nenhuma atividade.</div>';
+                return;
+            }
+            
+            commentsArray.forEach(c => {
+                log.innerHTML += `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-[#182a4d] border border-blue-900 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">${c.initials}</div>
+                        <div class="text-sm bg-[#22272b] p-3 rounded-md w-full border border-[#3a444c]">
+                            <div class="font-bold text-white mb-1">${c.user}</div>
+                            <div class="text-[#b6c2cf] whitespace-pre-wrap">${c.text}</div>
+                            <div class="text-xs text-[#8c9bab] mt-2">${c.date}</div>
+                        </div>
+                    </div>`;
+            });
+        }
+    </script>
+</body>
+</html>
