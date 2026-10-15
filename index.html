@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Planejamento</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         ::-webkit-scrollbar { width: 8px; }
@@ -30,7 +32,7 @@
             <i class="fas fa-shield-alt text-5xl text-[#38bdf8] mb-6 drop-shadow-lg"></i>
             <h2 class="text-xl text-white font-semibold mb-2">Acesso Restrito</h2>
             <p class="text-slate-400 mb-8 text-sm">Faça login com sua conta do Google para acessar ou solicitar aprovação ao administrador.</p>
-            <button onclick="loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-gray-800 font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-3 shadow-md">
+            <button onclick="window.loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-gray-800 font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-3 shadow-md">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5"> 
                 Entrar com Google
             </button>
@@ -41,7 +43,7 @@
             <i class="fas fa-user-clock text-5xl text-yellow-500 mb-6 drop-shadow-lg"></i>
             <h2 class="text-xl text-white font-semibold mb-2">Aprovação Pendente</h2>
             <p class="text-slate-400 mb-8 text-sm">Sua conta foi registrada com sucesso, mas o acesso aguarda a liberação do administrador. Retorne mais tarde.</p>
-            <button onclick="logout()" class="w-full border border-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg transition">
+            <button onclick="window.logout()" class="w-full border border-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg transition">
                 Sair
             </button>
         </div>
@@ -50,14 +52,16 @@
     <!-- APLICATIVO PRINCIPAL (Oculto até logar) -->
     <div id="appContainer" class="hidden flex h-full w-full">
         
-        <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded-md shadow-lg">
+        <!-- Botão Mobile -->
+        <button onclick="window.toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded-md shadow-lg">
             <i class="fas fa-bars text-xl"></i>
         </button>
 
+        <!-- Sidebar / Menu Lateral -->
         <aside id="sidebar" class="bg-[#0f172a] w-64 h-full border-r border-slate-700 flex flex-col absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="p-4 border-b border-slate-700 flex justify-between items-center mt-12 md:mt-0">
                 <h2 class="text-xl font-bold text-center w-full bg-cyan-800/50 py-2 rounded border border-cyan-700 shadow-inner">Menu</h2>
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white absolute right-4"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="window.toggleSidebar()" class="md:hidden text-slate-400 hover:text-white absolute right-4"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-4 space-y-2">
                 <button class="menu-item-3d w-full text-left py-2 px-4 rounded border border-slate-700 bg-slate-800 text-sm tracking-wide">Agenda</button>
@@ -80,12 +84,13 @@
                         <div id="userEmailDisplay" class="text-slate-500 truncate w-40">email@google.com</div>
                     </div>
                 </div>
-                <button onclick="logout()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-1.5 rounded text-sm transition flex items-center justify-center gap-2">
+                <button onclick="window.logout()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-1.5 rounded text-sm transition flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
             </div>
         </aside>
 
+        <!-- Conteúdo Principal -->
         <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#1e293b]">
             <div class="hidden lg:block absolute right-2 top-1/2 -translate-y-1/2 rotate-90 origin-right text-slate-500/50 text-sm font-semibold tracking-widest whitespace-nowrap pointer-events-none">By - Jose Andrade</div>
 
@@ -93,33 +98,34 @@
                 <h1 class="text-3xl font-semibold tracking-wider text-slate-200">Meu Planejamento</h1>
             </header>
 
-            <div id="connectionStatus" class="text-center text-xs text-yellow-500 mb-2 font-mono">Conectando...</div>
+            <div id="connectionStatus" class="text-center text-xs text-yellow-500 mb-2 font-mono">Verificando conexão...</div>
 
+            <!-- Grid de Botões -->
             <div class="flex-1 overflow-y-auto p-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto h-full auto-rows-fr">
-                    <button onclick="openModal('Diário')" class="card-btn bg-[#4eb4e6] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Diário</button>
-                    <button onclick="openModal('Investimentos')" class="card-btn bg-[#18465d] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Investimentos</button>
-                    <button onclick="openModal('Atividades')" class="card-btn bg-[#102a3a] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Atividades</button>
-                    <button onclick="openModal('Contas e Bancos')" class="card-btn bg-[#4ade80] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
-                    <button onclick="openModal('Contas Secundárias')" class="card-btn bg-[#1c5f2b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
-                    <button onclick="openModal('Leituras')" class="card-btn bg-[#0c2f12] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Leituras</button>
-                    <button onclick="openModal('Metas')" class="card-btn bg-[#f5a87f] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Metas</button>
-                    <button onclick="openModal('Autorresponsabilidade')" class="card-btn bg-[#c25119] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Autorresponsabilidade</button>
-                    <button onclick="openModal('Loterias')" class="card-btn bg-[#7a3411] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Loterias</button>
-                    <button onclick="openModal('Sugestões')" class="card-btn bg-[#ffcc5c] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Sugestões</button>
-                    <button onclick="openModal('Conquistas')" class="card-btn bg-[#ffd600] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Conquistas</button>
-                    <button onclick="openModal('Despesas')" class="card-btn bg-[#f59e0b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Despesas</button>
+                    <button onclick="window.openModal('Diário')" class="card-btn bg-[#4eb4e6] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Diário</button>
+                    <button onclick="window.openModal('Investimentos')" class="card-btn bg-[#18465d] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Investimentos</button>
+                    <button onclick="window.openModal('Atividades')" class="card-btn bg-[#102a3a] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Atividades</button>
+                    <button onclick="window.openModal('Contas e Bancos')" class="card-btn bg-[#4ade80] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
+                    <button onclick="window.openModal('Contas Secundárias')" class="card-btn bg-[#1c5f2b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Contas / Bancos</button>
+                    <button onclick="window.openModal('Leituras')" class="card-btn bg-[#0c2f12] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Leituras</button>
+                    <button onclick="window.openModal('Metas')" class="card-btn bg-[#f5a87f] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Metas</button>
+                    <button onclick="window.openModal('Autorresponsabilidade')" class="card-btn bg-[#c25119] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Autorresponsabilidade</button>
+                    <button onclick="window.openModal('Loterias')" class="card-btn bg-[#7a3411] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Loterias</button>
+                    <button onclick="window.openModal('Sugestões')" class="card-btn bg-[#ffcc5c] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Sugestões</button>
+                    <button onclick="window.openModal('Conquistas')" class="card-btn bg-[#ffd600] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Conquistas</button>
+                    <button onclick="window.openModal('Despesas')" class="card-btn bg-[#f59e0b] text-white font-medium text-xl rounded-2xl shadow-lg p-6 min-h-[120px]">Despesas</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal (mantido inalterado) -->
+    <!-- Modal de Interação -->
     <div id="inputModal" class="hidden fixed inset-0 z-50 bg-black/70 flex justify-center items-start pt-10 pb-10 overflow-y-auto px-4">
         <div class="bg-[#22272b] w-full max-w-5xl rounded-xl shadow-2xl text-[#b6c2cf] relative flex flex-col md:flex-row mt-4">
-            <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700 text-slate-400 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
+            <button onclick="window.closeModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700 text-slate-400 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
 
-            <!-- Esquerda -->
+            <!-- Esquerda: Título, Descrição e Checklist -->
             <div class="flex-1 p-6 border-b md:border-b-0 md:border-r border-[#3a444c]">
                 <div class="flex items-start gap-3 mb-6">
                     <i class="far fa-credit-card text-xl mt-1"></i>
@@ -130,7 +136,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2 mb-8 ml-8">
-                    <button onclick="focusChecklist()" class="bg-[#3a444c] hover:bg-[#4a555e] px-3 py-1.5 rounded text-sm flex items-center gap-2 transition"><i class="fas fa-check-square"></i> Adicionar Checklist</button>
+                    <button onclick="window.focusChecklist()" class="bg-[#3a444c] hover:bg-[#4a555e] px-3 py-1.5 rounded text-sm flex items-center gap-2 transition"><i class="fas fa-check-square"></i> Adicionar Checklist</button>
                 </div>
 
                 <!-- Descrição -->
@@ -142,7 +148,7 @@
                             <textarea id="modalDescription" rows="4" class="w-full bg-transparent p-3 text-sm text-white resize-y outline-none" placeholder="Adicionar uma descrição..."></textarea>
                         </div>
                         <div class="mt-2">
-                            <button id="saveDescBtn" onclick="saveDescription()" class="bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] font-medium px-4 py-1.5 rounded transition text-sm">Salvar Descrição</button>
+                            <button id="saveDescBtn" onclick="window.saveDescription()" class="bg-[#579dff] hover:bg-[#85b8ff] text-[#1d2125] font-medium px-4 py-1.5 rounded transition text-sm">Salvar Descrição</button>
                         </div>
                     </div>
                 </div>
@@ -159,15 +165,15 @@
                             </div>
                         </div>
                         <div id="checklistContainer" class="space-y-2 mb-4"></div>
-                        <div class="mt-3">
-                            <input id="newChecklistInput" type="text" placeholder="Adicionar um item..." class="w-full bg-[#22272b] border border-[#3a444c] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#579dff] transition mb-2">
-                            <button onclick="addChecklistItem()" class="bg-[#3a444c] hover:bg-[#4a555e] px-4 py-1.5 rounded text-sm transition">Adicionar</button>
+                        <div class="mt-3 flex gap-2">
+                            <input id="newChecklistInput" type="text" placeholder="Adicionar um item..." class="w-full bg-[#22272b] border border-[#3a444c] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#579dff] transition">
+                            <button onclick="window.addChecklistItem()" class="bg-[#3a444c] hover:bg-[#4a555e] px-4 py-2 rounded text-sm transition font-medium">Adicionar</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Direita -->
+            <!-- Direita: Comentários/Atividade -->
             <div class="w-full md:w-80 p-6 bg-[#282e33] rounded-r-xl">
                 <div class="flex items-center gap-2 text-white font-medium mb-6">
                     <i class="far fa-comment-alt"></i><span>Atividade</span>
@@ -181,13 +187,13 @@
         </div>
     </div>
 
-    <!-- FIREBASE E LÓGICA DE AUTENTICAÇÃO -->
+    <!-- SCRIPT DE CONFIGURAÇÃO E LÓGICA DO FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        // Importações ATUALIZADAS para usar Redirecionamento (signInWithRedirect) no lugar do Popup
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // Credenciais do Projeto
         const firebaseConfig = {
             apiKey: "AIzaSyCnYNS9o0TthwxhrtoH0csjQrT7VJM2214",
             authDomain: "meu-planejamento-web.firebaseapp.com",
@@ -203,27 +209,39 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // ⚠️ ALERTA: MUDE ESTE E-MAIL PARA O SEU GMAIL PESSOAL
-        // Esse é o e-mail que tem permissão master para aprovar os outros.
+        // ==========================================
+        // ⚠️ COLOQUE SEU E-MAIL AQUI EMBAIXO
+        // ==========================================
         const MASTER_EMAIL = "rss.andrade@gmail.com"; 
-        
+        // ==========================================
+
         let currentUserData = null;
+        let currentCategory = '';
+        let currentData = {};
 
-        // Trata os resultados caso haja um erro após voltar da tela do Google
-        getRedirectResult(auth).catch((error) => {
-            console.error("Erro no redirecionamento do login:", error);
-            if(error.code !== 'auth/redirect-cancelled-by-user') {
-                alert("Erro ao entrar. Detalhes no console.");
-            }
-        });
+        // --- AUTENTICAÇÃO ---
+        window.loginWithGoogle = function() {
+            console.log("Iniciando processo de login com Google...");
+            signInWithPopup(auth, provider).catch((error) => {
+                console.error("Erro ao fazer login:", error);
+                alert("Falha ao abrir tela de login do Google. Erro: " + error.message);
+            });
+        };
 
-        // Gerenciador de Autenticação
+        window.logout = function() {
+            signOut(auth).then(() => {
+                console.log("Usuário deslogado com sucesso.");
+            });
+        };
+
         onAuthStateChanged(auth, (user) => {
             const loginScreen = document.getElementById('loginScreen');
             const appContainer = document.getElementById('appContainer');
             
             if (user) {
-                // Atualiza Sidebar com dados do usuário
+                console.log("Usuário logado:", user.email);
+                
+                // Preencher dados no menu lateral
                 document.getElementById('userNameDisplay').innerText = user.displayName || "Usuário";
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 if(user.photoURL) {
@@ -232,14 +250,15 @@
                     avatar.classList.remove('hidden');
                 }
                 
-                // Setar iniciais no comentário
+                // Iniciais do Avatar
                 const inits = user.displayName ? user.displayName.substring(0,2).toUpperCase() : "US";
                 document.getElementById('userInitialsComment').innerText = inits;
                 currentUserData = { name: user.displayName, initials: inits };
 
+                // Verifica Regra de Aprovação
                 verificarAprovacao(user);
             } else {
-                // Usuário deslogado
+                // Tela Inicial quando Deslogado
                 loginScreen.classList.remove('hidden');
                 document.getElementById('loginCard').classList.remove('hidden');
                 document.getElementById('pendingCard').classList.add('hidden');
@@ -254,17 +273,15 @@
                 const isMaster = user.email === MASTER_EMAIL;
                 
                 if (!snapshot.exists()) {
-                    // Primeiro login: cria o cadastro no banco
                     set(userRef, {
                         email: user.email,
                         name: user.displayName,
-                        approved: isMaster // Se for o Master, já nasce aprovado
+                        approved: isMaster
                     }).then(() => {
                         liberarAcesso(isMaster);
                     });
                 } else {
                     const data = snapshot.val();
-                    // Libera se o approved for true ou se for o e-mail Master
                     liberarAcesso(data.approved === true || isMaster);
                 }
             });
@@ -274,29 +291,20 @@
             if (aprovado) {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appContainer').classList.remove('hidden');
-                monitorarConexao(); // Só conecta o monitor após liberar acesso
+                monitorarConexao();
             } else {
                 document.getElementById('loginCard').classList.add('hidden');
                 document.getElementById('pendingCard').classList.remove('hidden');
             }
         }
 
-        // Função de Login atualizada para usar Redirect
-        window.loginWithGoogle = function() {
-            signInWithRedirect(auth, provider);
-        };
-
-        window.logout = function() {
-            signOut(auth);
-        };
-
-        // --- LÓGICA DO APP (igual à versão anterior) ---
+        // --- CONEXÃO FIREBASE (BANCO DE DADOS) ---
         function monitorarConexao() {
             const connectedRef = ref(db, ".info/connected");
             onValue(connectedRef, (snap) => {
                 const statusDiv = document.getElementById("connectionStatus");
                 if (snap.val() === true) {
-                    statusDiv.innerText = "Sincronizado";
+                    statusDiv.innerText = "Sincronizado com Nuvem";
                     statusDiv.className = "text-center text-xs text-green-500 mb-2 font-mono";
                     setTimeout(() => statusDiv.style.display = 'none', 3000);
                 } else {
@@ -307,15 +315,13 @@
             });
         }
 
-        let currentCategory = '';
-        let currentData = {};
-
         function setupFirebaseListener(categoryName) {
             const categoryRef = ref(db, 'planejamento/' + categoryName);
             onValue(categoryRef, (snapshot) => {
                 const data = snapshot.val();
                 currentData = data ? data : { description: '', comments: [], checklist: [] };
                 
+                // Só atualiza a tela se este modal específico estiver aberto
                 if (!document.getElementById('inputModal').classList.contains('hidden') && currentCategory === categoryName) {
                     document.getElementById('modalDescription').value = currentData.description || '';
                     renderComments(currentData.comments || []);
@@ -326,11 +332,14 @@
 
         function syncToFirebase() {
             set(ref(db, 'planejamento/' + currentCategory), currentData).catch(e => {
-                console.error("Erro ao salvar (verifique as permissões de aprovação):", e);
+                console.error("Erro ao salvar dados. Verifique permissões.", e);
             });
         }
 
-        window.toggleSidebar = function() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); };
+        // --- INTERFACE DO USUÁRIO (MODAL E MENU) ---
+        window.toggleSidebar = function() { 
+            document.getElementById('sidebar').classList.toggle('-translate-x-full'); 
+        };
 
         window.openModal = function(categoryName) {
             currentCategory = categoryName;
@@ -339,19 +348,32 @@
             setupFirebaseListener(categoryName);
         };
 
-        window.closeModal = function() { document.getElementById('inputModal').classList.add('hidden'); };
-        document.getElementById('inputModal').addEventListener('click', e => { if (e.target === document.getElementById('inputModal')) window.closeModal(); });
+        window.closeModal = function() { 
+            document.getElementById('inputModal').classList.add('hidden'); 
+        };
 
+        // Fechar ao clicar fora do modal
+        document.getElementById('inputModal').addEventListener('click', e => { 
+            if (e.target === document.getElementById('inputModal')) window.closeModal(); 
+        });
+
+        // --- DESCRIÇÃO ---
         window.saveDescription = function() {
             currentData.description = document.getElementById('modalDescription').value;
             syncToFirebase();
             const btn = document.getElementById('saveDescBtn');
             btn.innerText = "Salvo!";
             btn.classList.replace('bg-[#579dff]', 'bg-green-500');
-            setTimeout(() => { btn.innerText = "Salvar Descrição"; btn.classList.replace('bg-green-500', 'bg-[#579dff]'); }, 2000);
+            setTimeout(() => { 
+                btn.innerText = "Salvar Descrição"; 
+                btn.classList.replace('bg-green-500', 'bg-[#579dff]'); 
+            }, 2000);
         };
 
-        window.focusChecklist = function() { document.getElementById('newChecklistInput').focus(); };
+        // --- CHECKLIST ---
+        window.focusChecklist = function() { 
+            document.getElementById('newChecklistInput').focus(); 
+        };
 
         window.addChecklistItem = function() {
             const input = document.getElementById('newChecklistInput');
@@ -364,7 +386,9 @@
             }
         };
 
-        document.getElementById('newChecklistInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') window.addChecklistItem(); });
+        document.getElementById('newChecklistInput').addEventListener('keypress', function(e) { 
+            if (e.key === 'Enter') window.addChecklistItem(); 
+        });
 
         window.toggleChecklist = function(index) {
             currentData.checklist[index].done = !currentData.checklist[index].done;
@@ -387,11 +411,11 @@
                 const lineThrough = item.done ? 'line-through text-[#8c9bab]' : 'text-white';
                 container.innerHTML += `
                     <div class="flex items-center justify-between group hover:bg-[#3a444c] p-2 rounded -mx-2 transition">
-                        <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="toggleChecklist(${index})">
-                            <input type="checkbox" class="checklist-checkbox" ${item.done ? 'checked' : ''} onclick="event.stopPropagation(); toggleChecklist(${index})">
+                        <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="window.toggleChecklist(${index})">
+                            <input type="checkbox" class="checklist-checkbox" ${item.done ? 'checked' : ''} onclick="event.stopPropagation(); window.toggleChecklist(${index})">
                             <span class="text-sm ${lineThrough}">${item.text}</span>
                         </div>
-                        <button onclick="deleteChecklist(${index})" class="text-[#8c9bab] hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-2"><i class="fas fa-trash-alt text-xs"></i></button>
+                        <button onclick="window.deleteChecklist(${index})" class="text-[#8c9bab] hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-2"><i class="fas fa-trash-alt text-xs"></i></button>
                     </div>`;
             });
 
@@ -403,6 +427,7 @@
             else document.getElementById('progressBar').classList.replace('bg-green-500', 'bg-[#579dff]');
         }
 
+        // --- COMENTÁRIOS E ATIVIDADE ---
         document.getElementById('commentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && this.value.trim() !== '') {
                 const dateStr = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(' de ', ' de ');
