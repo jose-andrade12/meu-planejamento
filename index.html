@@ -185,7 +185,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Importações ATUALIZADAS para usar Redirecionamento (signInWithRedirect) no lugar do Popup
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCnYNS9o0TthwxhrtoH0csjQrT7VJM2214",
@@ -203,9 +204,18 @@
         const provider = new GoogleAuthProvider();
 
         // ⚠️ ALERTA: MUDE ESTE E-MAIL PARA O SEU GMAIL PESSOAL
+        // Esse é o e-mail que tem permissão master para aprovar os outros.
         const MASTER_EMAIL = "rss.andrade@gmail.com"; 
         
         let currentUserData = null;
+
+        // Trata os resultados caso haja um erro após voltar da tela do Google
+        getRedirectResult(auth).catch((error) => {
+            console.error("Erro no redirecionamento do login:", error);
+            if(error.code !== 'auth/redirect-cancelled-by-user') {
+                alert("Erro ao entrar. Detalhes no console.");
+            }
+        });
 
         // Gerenciador de Autenticação
         onAuthStateChanged(auth, (user) => {
@@ -271,11 +281,9 @@
             }
         }
 
+        // Função de Login atualizada para usar Redirect
         window.loginWithGoogle = function() {
-            signInWithPopup(auth, provider).catch(error => {
-                console.error("Erro no login:", error);
-                alert("Erro ao tentar fazer login com Google. Tente novamente.");
-            });
+            signInWithRedirect(auth, provider);
         };
 
         window.logout = function() {
