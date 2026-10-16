@@ -213,14 +213,17 @@
         </div>
     </div>
 
-    <!-- SCRIPT FIREBASE E LÓGICA -->
+<!-- SCRIPT FIREBASE E LÓGICA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // ==========================================
+        // ⚠️ INSIRA AQUI AS SUAS CREDENCIAIS
+        // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCnYNS9oOTthwxhrtoH0csjQrT7VJM22L4", // Confirme se sua chave real está aqui
+            apiKey: "AIzaSyBE7HbmYhdnUnbi_PvY27pBNgfiWoh4I9w", // <-- TEM DE COLOCAR A CHAVE CORRETA AQUI
             authDomain: "meu-planejamento-web.firebaseapp.com",
             databaseURL: "https://meu-planejamento-web-default-rtdb.firebaseio.com",
             projectId: "meu-planejamento-web",
@@ -228,33 +231,65 @@
             messagingSenderId: "833049352188",
             appId: "1:833049352188:web:47a59ad9799f5330960479"
         };
+        const MASTER_EMAIL = "rss.andrade@gmail.com"; // <-- COLOQUE O SEU GMAIL AQUI
+        // ==========================================
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        let app, db, auth, provider;
 
-        // ⚠️ ALERTA: MUDE PARA O SEU GMAIL
-        const MASTER_EMAIL = "rss.andrade@gmail.com"; 
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            auth = getAuth(app);
+            provider = new GoogleAuthProvider();
+            console.log("Firebase inicializado com sucesso.");
+        } catch (error) {
+            console.error("Erro ao inicializar Firebase:", error);
+            alert("Erro fatal de configuração: " + error.message);
+        }
 
         // ESTADO GLOBAL
         let currentUserData = null;
-        let currentCategory = '';   // Ex: 'Diário'
-        let currentCardId = '';     // Ex: '-OaXyz123...'
-        let currentCardData = {};   // Dados do cartão selecionado
-        let allCategoryCards = {};  // Todos os cartões da categoria selecionada
+        let currentCategory = '';
+        let currentCardId = '';
+        let currentCardData = {};
+        let allCategoryCards = {};
 
-        getRedirectResult(auth).catch(err => { if(err.code !== 'auth/redirect-cancelled-by-user') console.error(err); });
+        // --- AUTENTICAÇÃO GARANTIDA NO WINDOW ---
+        window.loginWithGoogle = function() {
+            console.log("Tentando iniciar login...");
+            if (!auth || !provider) {
+                alert("O sistema de login não carregou corretamente. Verifique a consola.");
+                return;
+            }
+            
+            signInWithPopup(auth, provider).then((result) => {
+                console.log("Login bem sucedido:", result.user.email);
+            }).catch((error) => {
+                console.error("Erro completo do login:", error);
+                if (error.code === 'auth/popup-blocked') {
+                    alert("O seu navegador bloqueou o popup de login. Por favor, permita popups para este site na barra de endereço e tente novamente.");
+                } else if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+                    // O utilizador fechou a janela, não fazemos nada.
+                    console.log("Janela de login fechada.");
+                } else {
+                    alert("Erro ao entrar: " + error.message);
+                }
+            });
+        };
 
-        // --- AUTENTICAÇÃO ---
-        window.loginWithGoogle = () => signInWithRedirect(auth, provider);
-        window.logout = () => signOut(auth);
+        window.logout = function() {
+            signOut(auth).then(() => {
+                console.log("Deslogado.");
+                location.reload(); // Recarrega a página para limpar o estado
+            });
+        };
 
         onAuthStateChanged(auth, (user) => {
             const ls = document.getElementById('loginScreen');
             const ac = document.getElementById('appContainer');
             
             if (user) {
+                console.log("Estado: Logado como", user.email);
                 document.getElementById('userNameDisplay').innerText = user.displayName || "Usuário";
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 if(user.photoURL) {
@@ -267,6 +302,7 @@
 
                 verificarAprovacao(user);
             } else {
+                console.log("Estado: Deslogado");
                 ls.classList.remove('hidden');
                 document.getElementById('loginCard').classList.remove('hidden');
                 document.getElementById('pendingCard').classList.add('hidden');
@@ -312,23 +348,19 @@
         window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('-translate-x-full');
 
         // ==========================================
-        // VISTAS: PAINEL -> CATEGORIA
+        // VISTAS E LÓGICA DE CARTÕES
         // ==========================================
-        let categoryListenerUnsubscribe = null;
-
         window.openCategory = function(categoryName) {
             currentCategory = categoryName;
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('categoryView').classList.remove('hidden');
             document.getElementById('columnTitle').innerText = categoryName.toUpperCase();
             
-            // Ouvir alterações apenas na categoria selecionada
             const catRef = ref(db, 'planejamento/' + categoryName + '/cards');
             onValue(catRef, (snapshot) => {
                 allCategoryCards = snapshot.val() || {};
                 renderCategoryCards();
                 
-                // Se um modal estiver aberto, atualiza os dados daquele cartão
                 if (!document.getElementById('inputModal').classList.contains('hidden') && currentCardId) {
                     currentCardData = allCategoryCards[currentCardId] || { title: 'Cartão Excluído', description: '', comments: [], checklist: [] };
                     updateModalUI();
@@ -340,12 +372,8 @@
             document.getElementById('categoryView').classList.add('hidden');
             document.getElementById('dashboardView').classList.remove('hidden');
             currentCategory = '';
-            // Idealmente deveríamos dar unsubscribe ao listener aqui para poupar recursos.
         };
 
-        // ==========================================
-        // GESTÃO DE CARTÕES NA COLUNA
-        // ==========================================
         window.toggleAddCardForm = function(show) {
             document.getElementById('addCardForm').style.display = show ? 'block' : 'none';
             document.getElementById('addCardBtn').style.display = show ? 'none' : 'flex';
@@ -357,11 +385,7 @@
             const title = input.value.trim();
             if(title) {
                 const cardsRef = ref(db, 'planejamento/' + currentCategory + '/cards');
-                const newCardRef = push(cardsRef);
-                set(newCardRef, {
-                    title: title,
-                    createdAt: new Date().toISOString()
-                }).then(() => {
+                push(cardsRef, { title: title, createdAt: new Date().toISOString() }).then(() => {
                     input.value = '';
                     window.toggleAddCardForm(false);
                 });
@@ -371,22 +395,18 @@
         function renderCategoryCards() {
             const container = document.getElementById('cardsListContainer');
             container.innerHTML = '';
-            
             const cardIds = Object.keys(allCategoryCards);
             document.getElementById('cardCount').innerText = cardIds.length;
 
             cardIds.forEach(id => {
                 const card = allCategoryCards[id];
                 const hasDesc = card.description && card.description.trim() !== '' ? '<i class="fas fa-align-left text-xs text-slate-500 mt-2"></i>' : '';
-                
-                // Renderização do cartão ao estilo Trello
-                const cardHTML = `
+                container.innerHTML += `
                     <div onclick="window.openCardModal('${id}')" class="trello-card bg-[#22272b] p-3 rounded-lg border border-slate-700 shadow-sm cursor-pointer relative group">
                         <div class="text-sm text-slate-200 leading-snug break-words">${card.title}</div>
                         ${hasDesc}
                     </div>
                 `;
-                container.innerHTML += cardHTML;
             });
         }
 
@@ -396,10 +416,8 @@
         window.openCardModal = function(cardId) {
             currentCardId = cardId;
             currentCardData = allCategoryCards[cardId];
-            
             document.getElementById('modalListName').innerText = currentCategory.toUpperCase();
             updateModalUI();
-            
             document.getElementById('inputModal').classList.remove('hidden');
         };
 
@@ -413,30 +431,24 @@
 
         window.closeModal = function() { 
             document.getElementById('inputModal').classList.add('hidden'); 
-            currentCardId = '';
-            currentCardData = {};
+            currentCardId = ''; currentCardData = {};
         };
         
         document.getElementById('inputModal').addEventListener('click', e => { 
             if (e.target === document.getElementById('inputModal')) window.closeModal(); 
         });
 
-        // Função utilitária para gravar apenas o cartão atual no Firebase
         function syncCardToFirebase() {
             if(!currentCardId || !currentCategory) return;
-            set(ref(db, `planejamento/${currentCategory}/cards/${currentCardId}`), currentCardData)
-                .catch(e => console.error("Erro ao gravar:", e));
+            set(ref(db, `planejamento/${currentCategory}/cards/${currentCardId}`), currentCardData);
         }
 
         window.deleteCurrentCard = function() {
             if(confirm("Tem certeza que deseja excluir este cartão definitivamente?")) {
-                remove(ref(db, `planejamento/${currentCategory}/cards/${currentCardId}`)).then(() => {
-                    window.closeModal();
-                });
+                remove(ref(db, `planejamento/${currentCategory}/cards/${currentCardId}`)).then(() => window.closeModal());
             }
         };
 
-        // --- DESCRIÇÃO ---
         window.saveDescription = function() {
             currentCardData.description = document.getElementById('modalDescription').value;
             syncCardToFirebase();
@@ -445,7 +457,6 @@
             setTimeout(() => { btn.innerText = "Salvar Descrição"; btn.classList.replace('bg-green-500', 'bg-[#579dff]'); }, 2000);
         };
 
-        // --- CHECKLIST ---
         window.focusChecklist = () => document.getElementById('newChecklistInput').focus();
 
         window.addChecklistItem = function() {
@@ -475,7 +486,6 @@
             const container = document.getElementById('checklistContainer');
             container.innerHTML = '';
             let completed = 0;
-
             checklist.forEach((item, index) => {
                 if (item.done) completed++;
                 const lineThrough = item.done ? 'line-through text-[#8c9bab]' : 'text-white';
@@ -488,7 +498,6 @@
                         <button onclick="window.deleteChecklist(${index})" class="text-[#8c9bab] hover:text-red-400 opacity-0 group-hover:opacity-100 transition px-2"><i class="fas fa-trash-alt text-xs"></i></button>
                     </div>`;
             });
-
             const total = checklist.length;
             const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
             document.getElementById('progressText').innerText = `${percentage}%`;
@@ -497,15 +506,11 @@
             else document.getElementById('progressBar').classList.replace('bg-green-500', 'bg-[#579dff]');
         }
 
-        // --- COMENTÁRIOS ---
         document.getElementById('commentInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && this.value.trim() !== '') {
                 const dateStr = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(' de ', ' de ');
                 if (!currentCardData.comments) currentCardData.comments = [];
-                currentCardData.comments.unshift({ 
-                    user: currentUserData.name, initials: currentUserData.initials, 
-                    text: this.value.trim(), date: dateStr 
-                });
+                currentCardData.comments.unshift({ user: currentUserData.name, initials: currentUserData.initials, text: this.value.trim(), date: dateStr });
                 syncCardToFirebase();
                 this.value = '';
             }
