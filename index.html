@@ -33,8 +33,9 @@
             <i class="fas fa-shield-alt text-5xl text-[#38bdf8] mb-6 drop-shadow-lg"></i>
             <h2 class="text-xl text-white font-semibold mb-2">Acesso Restrito</h2>
             <p class="text-slate-400 mb-8 text-sm">Faça login com a sua conta do Google para aceder ou solicitar aprovação ao administrador.</p>
-            <button onclick="window.loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-gray-800 font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-3 shadow-md">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5"> Entrar com Google
+            <button id="loginBtn" onclick="window.loginWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-gray-800 font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-3 shadow-md">
+                <img id="loginIcon" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5 transition-opacity"> 
+                <span id="loginText">Entrar com Google</span>
             </button>
         </div>
 
@@ -48,7 +49,6 @@
 
     <!-- APLICAÇÃO PRINCIPAL -->
     <div id="appContainer" class="hidden flex h-full w-full">
-        
         <button onclick="window.toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded-md shadow-lg"><i class="fas fa-bars text-xl"></i></button>
         
         <!-- SIDEBAR -->
@@ -232,7 +232,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // CREDENCIAIS
         const firebaseConfig = {
@@ -260,14 +260,47 @@
         let currentCardData = {};
         let allCategoryCards = {};
 
-        // Processa o redireccionamento em telemóveis
-        getRedirectResult(auth).catch(err => {
-            if(err.code !== 'auth/redirect-cancelled-by-user') console.error("Erro no redirect:", err);
+        // Processa o redireccionamento para saber se já voltou do Google (Telemóvel)
+        getRedirectResult(auth).then((result) => {
+            if (result) console.log("Login via redirect concluído com sucesso:", result.user.email);
+        }).catch(err => {
+            if(err.code !== 'auth/redirect-cancelled-by-user') {
+                console.error("Erro no redirect:", err);
+                alert("Erro ao retornar do Google: " + err.message);
+            }
         });
 
-        window.loginWithGoogle = function() {
-            // Utilizamos signInWithRedirect para máxima compatibilidade com navegadores mobile
-            signInWithRedirect(auth, provider);
+        // HÍBRIDO: Tenta Popup primeiro, se for bloqueado vai para Redirect
+        window.loginWithGoogle = async function() {
+            const btnText = document.getElementById('loginText');
+            const icon = document.getElementById('loginIcon');
+            
+            btnText.innerText = "A autenticar...";
+            icon.style.opacity = "0.5";
+
+            try {
+                // Tenta abrir o Popup (Padrão e recomendado para PC)
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.warn("Popup falhou ou foi bloqueado, a tentar alternativa:", error.code);
+                
+                // Se o erro indicar que a janela popup foi bloqueada (comum no iOS Safari e Android Chrome)
+                if (error.code === 'auth/popup-blocked' || error.message.toLowerCase().includes('popup')) {
+                    btnText.innerText = "A redirecionar...";
+                    signInWithRedirect(auth, provider);
+                } 
+                // Se o utilizador fechou a janela manualmente
+                else if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+                    btnText.innerText = "Entrar com Google";
+                    icon.style.opacity = "1";
+                } 
+                // Qualquer outro erro
+                else {
+                    alert("Erro ao entrar: " + error.message);
+                    btnText.innerText = "Entrar com Google";
+                    icon.style.opacity = "1";
+                }
+            }
         };
 
         window.logout = function() {
@@ -300,17 +333,30 @@
                 document.getElementById('loginCard').classList.remove('hidden');
                 document.getElementById('pendingCard').classList.add('hidden');
                 ac.classList.add('hidden');
+                
+                // Reset ao botão
+                document.getElementById('loginText').innerText = "Entrar com Google";
+                document.getElementById('loginIcon').style.opacity = "1";
             }
         });
 
+        // ⚠️ ADICIONADO TRATAMENTO DE ERROS DE REGRAS DE BASE DE DADOS
         function verificarAprovacao(user) {
             const userRef = ref(db, 'users/' + user.uid);
             onValue(userRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    set(userRef, { email: user.email, name: user.displayName, approved: isUserMaster }).then(() => liberarAcesso(isUserMaster));
+                    set(userRef, { email: user.email, name: user.displayName, approved: isUserMaster })
+                        .then(() => liberarAcesso(isUserMaster))
+                        .catch(err => {
+                            console.error("Erro ao gravar utilizador:", err);
+                            alert("ERRO DE BASE DE DADOS: O utilizador logou, mas o Firebase bloqueou a gravação do perfil. Verifique as Regras de Segurança (Rules).");
+                        });
                 } else {
                     liberarAcesso(snapshot.val().approved === true || isUserMaster);
                 }
+            }, (error) => {
+                console.error("Erro ao ler utilizador:", error);
+                alert("ERRO DE BASE DE DADOS: Permissão de leitura negada. Verifique as Regras de Segurança (Rules) na Consola do Firebase.");
             });
         }
 
